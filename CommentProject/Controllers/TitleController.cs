@@ -1,5 +1,6 @@
 ﻿using CommentProject.BusinessLayer.Abstract;
 using CommentProject.EntityLayer.Concrete;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -9,11 +10,12 @@ namespace CommentProject.Controllers
     {
         private readonly ITitleService _titleService;
         private readonly ICategoryService _categoryService;
-
-        public TitleController(ITitleService titleService, ICategoryService categoryService)
+        private readonly UserManager<AppUser> _userManager;
+        public TitleController(ITitleService titleService, ICategoryService categoryService, UserManager<AppUser> userManager)
         {
             _titleService = titleService;
             _categoryService = categoryService;
+            _userManager = userManager;
         }
 
         public IActionResult Index()
@@ -22,7 +24,7 @@ namespace CommentProject.Controllers
             return View(values);
         }
         [HttpGet]
-        public IActionResult AddTitle()
+        public async Task<IActionResult> AddTitle()
         {
             List<SelectListItem> values = (from x in _categoryService.TGetList()
                                            select new SelectListItem
@@ -31,13 +33,16 @@ namespace CommentProject.Controllers
                                                Value = x.CategoryID.ToString()
                                            }).ToList();
             ViewBag.v=values;
+            
             return View();
         }
         [HttpPost]
-        public IActionResult AddTitle(Title title)
+        public async Task< IActionResult> AddTitle(Title title)
         {
-
-            return View();
+            var titleCreatorUser = await _userManager.FindByNameAsync(User.Identity.Name);
+            title.AppUserID = titleCreatorUser.Id;
+            _titleService.TInsert(title);
+            return RedirectToAction("Index");
         }
     }
 }

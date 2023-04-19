@@ -29,6 +29,11 @@ namespace CommentProject.BusinessLayer.Concrete
             return _commentDal.GetByID(id);
         }
 
+        public List<Comment> TGetCommentByTitle(int id)
+        {
+            return _commentDal.GetCommentByTitle(id);
+        }
+
         public List<Comment> TGetList()
         {
             return _commentDal.GetList();
